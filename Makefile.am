@@ -56,6 +56,7 @@ include babeld/subdir.am
 include eigrpd/subdir.am
 include sharpd/subdir.am
 include pimd/subdir.am
+include redhat/subdir.am
 
 SUBDIRS = . @LIBRFP@ @RFPTEST@ \
 	 @BGPD@ \
@@ -91,14 +92,6 @@ EXTRA_DIST += \
 	python/clidef.py \
 	python/clippy/__init__.py \
 	\
-	redhat/frr.init \
-	redhat/frr.service \
-	redhat/daemons \
-	redhat/frr.logrotate \
-	redhat/frr.pam \
-	redhat/frr.spec \
-	redhat/README.rpm_build.md \
-	\
 	snapcraft/snapcraft.yaml \
 	snapcraft/README.snap_build.md \
 	snapcraft/README.usage.md \
@@ -112,6 +105,6 @@ EXTRA_DIST += \
 	vtysh/Makefile.in \
 	# end
 
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I m4 -I .qh-at/m4
 
 noinst_HEADERS += defaults.h

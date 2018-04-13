@@ -7,7 +7,9 @@
 ##
 AC_PREREQ(2.60)
 
-AC_INIT(frr, 4.0, [https://github.com/frrouting/frr/issues])
+AC_INIT(frr,
+        m4_esyscmd([build-aux/git-version-gen --prefix frr- .tarball-version]),
+        [https://github.com/frrouting/frr/issues])
 PACKAGE_URL="https://frrouting.org/"
 AC_SUBST(PACKAGE_URL)
 PACKAGE_FULLNAME="FRRouting"
@@ -18,6 +20,12 @@ AC_SUBST(CONFIG_ARGS)
 
 AC_CONFIG_SRCDIR(lib/zebra.h)
 AC_CONFIG_MACRO_DIR([m4])
+
+AC_CONFIG_AUX_DIR([build-aux])
+AC_REQUIRE_AUX_FILE([git-version-gen])
+AC_REQUIRE_AUX_FILE([git-rpm-version-gen])
+## RPM Version/Release tags
+QH_RPM_VERSION_RELEASE(m4_esyscmd_s([build-aux/git-rpm-version-gen --prefix frr- .tarball-rpm-version]))
 
 dnl -----------------------------------
 dnl Get hostname and other information.

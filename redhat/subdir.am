@@ -1,0 +1,43 @@
+#
+# redhat
+#
+# vim: ft=automake
+
+gvg_version = .version
+redhat_spec = redhat/$(PACKAGE).spec
+redhat_init = redhat/$(PACKAGE).init
+redhat_service = redhat/$(PACKAGE).service
+redhat_logrotate = redhat/$(PACKAGE).logrotate
+redhat_pam = redhat/$(PACKAGE).pam
+redhat_daemons = redhat/daemons 
+redhat_readme = redhat/README.rpm_build.md
+
+BUILT_SOURCES += $(gvg_version)
+
+DISTCLEANFILES = $(gvg_version) \
+		 $(redhat_spec)
+
+EXTRA_DIST += $(gvg_version) \
+	      m4/gnulib-cache.m4 \
+	      $(redhat_spec) \
+	      $(redhat_init) \
+	      $(redhat_service) \
+	      $(redhat_logrotate) \
+	      $(redhat_pam) \
+	      $(redhat_daemons) \
+	      $(redhat_readme)
+
+$(gvg_version): Makefile
+	$(AM_V_GEN)echo $(VERSION) > $@-t && mv $@-t $@
+
+dist-tarball-version:
+	$(AM_V_GEN)echo $(VERSION) > $(distdir)/.tarball-version
+
+dist-tarball-rpm-version:
+	$(AM_V_GEN)echo $(QH_RPM_VERSION) $(QH_RPM_RELEASE) > $(distdir)/.tarball-rpm-version
+
+dist-hook: dist-tarball-version dist-tarball-rpm-version
+
+rpm: dist-gzip
+	$(AM_V_GEN)cp $(top_builddir)/$(PACKAGE)-$(VERSION).tar.gz `rpmbuild --eval=%_sourcedir` && \
+	  rpmbuild -ba --rmsource $(top_srcdir)/$(redhat_spec)

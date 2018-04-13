@@ -3,14 +3,10 @@
 # Some can be overriden on rpmbuild commandline with:
 # rpmbuild --define 'variable value'
 #   (use any value, ie 1 for flag "with_XXXX" definitions)
-#
-# E.g. rpmbuild --define 'release_rev 02' may be useful if building
-# rpms again and again on the same day, so the newer rpms can be installed.
-# bumping the number each time.
 
 #################### FRRouting (FRR) configure options #####################
 # with-feature options
-%{!?with_pam:           %global  with_pam           0 }
+%{!?with_pam:           %global  with_pam           1 }
 %{!?with_ospfclient:    %global  with_ospfclient    1 }
 %{!?with_ospfapi:       %global  with_ospfapi       1 }
 %{!?with_rtadv:         %global  with_rtadv         1 }
@@ -40,10 +36,9 @@
 %define     _localstatedir  /var/run/frr
 ############################################################################
 
-#### Version String tweak
-# Remove invalid characters form version string and replace with _
-%{expand: %%global rpmversion %(echo '@VERSION@' | tr [:blank:]- _ )}
 %define         frrversion   @VERSION@
+%define         rpmversion   @QH_RPM_VERSION@
+%define         rpmrelease   @QH_RPM_RELEASE@
 
 #### Check for systemd or init.d (upstart)
 # Check for init.d (upstart) as used in CentOS 6 or systemd (ie CentOS 7)
@@ -73,11 +68,6 @@
 %if 0%{?rhel} && 0%{?rhel} < 7
     %global  with_pimd  0
 %endif
-
-# misc internal defines
-%{!?frr_uid:            %global  frr_uid            92 }
-%{!?frr_gid:            %global  frr_gid            92 }
-%{!?vty_gid:            %global  vty_gid            85 }
 
 %define     daemon_list zebra ripd ospfd bgpd isisd ripngd ospf6d
 
@@ -122,13 +112,10 @@
 # allow build dir to be kept
 %{!?keep_build:         %global  keep_build         0 }
 
-#release sub-revision (the two digits after the CONFDATE)
-%{!?release_rev:        %global  release_rev        01 }
-
 Summary: Routing daemon
 Name:           frr
 Version:        %{rpmversion}
-Release:        @CONFDATE@%{release_rev}%{?dist}
+Release:        %{rpmrelease}%{?dist}
 License:        GPLv2+
 Group:          System Environment/Daemons
 Source0:        http://www.frrouting.org/releases/frr/%{name}-%{frrversion}.tar.gz
@@ -358,17 +345,16 @@ install -d -m750  %{buildroot}/var/run/frr
 # add vty_group
 %if 0%{?vty_group:1}
 if getent group %vty_group > /dev/null ; then : ; else \
- /usr/sbin/groupadd -r -g %vty_gid %vty_group > /dev/null || : ; fi
+ /usr/sbin/groupadd -r %vty_group > /dev/null || : ; fi
 %endif
 
 # add frr user and group
 %if 0%{?frr_user:1}
-# Ensure that frr_gid gets correctly allocated
 if getent group %frr_user >/dev/null; then : ; else \
- /usr/sbin/groupadd -g %frr_gid %frr_user > /dev/null || : ; \
+ /usr/sbin/groupadd -r %frr_user > /dev/null || : ; \
 fi
 if getent passwd %frr_user >/dev/null ; then : ; else \
- /usr/sbin/useradd  -u %frr_uid -g %frr_gid \
+ /usr/sbin/useradd  -g %frr_user \
   -M -r -s /sbin/nologin -c "FRRouting suite" \
   -d %_localstatedir %frr_user 2> /dev/null || : ; \
 fi

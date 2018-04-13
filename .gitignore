@@ -1,3 +1,6 @@
+/build-aux
+/.libgnu
+/.version
 compile
 config.log
 config.h
